@@ -1,67 +1,89 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Mappa ellenőrzés
+:: RTS Könyvtárstruktúra biztosítása
 if not exist "..\LOG" mkdir "..\LOG"
-set LOGFILE=..\LOG\RTS_Master_Log.txt
+if not exist "..\LOG\Recovery" mkdir "..\LOG\Recovery"
+if not exist "..\Apps" mkdir "..\Apps"
 
-:: Ciklus ellenőrzése (Újraindítás utáni folytatáshoz)
-if exist "..\LOG\cycle.tmp" (
-    set /p CYCLE=<"..\LOG\cycle.tmp"
-    echo [RTS] Folytatás: !CYCLE!. ciklus... >> "%LOGFILE%"
-    goto AUTO_RUN
+set MASTERLOG=..\LOG\RTS_Master_Log.txt
+set CYCLEFILE=..\LOG\cycle.tmp
+
+:: Rendszergazdai jog ellenőrzése
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo [HIBA] Kérlek, futtasd rendszergazdaként!
+    pause & exit
+)
+
+:: Ciklus ellenőrzése újraindítás után
+if exist "%CYCLEFILE%" (
+    set /p CYCLE=<"%CYCLEFILE%"
+    echo [%date% %time%] Rendszer ujraindult. Folytatas: !CYCLE!. ciklus... >> "%MASTERLOG%"
+    goto RUN_ENGINE
 )
 
 :MENU
 cls
-echo [RTS Defrager Master]
-echo 1. Alapos karbantartás (3x Defrag + 2x Scandisk ciklus)
-echo 2. Ütemezés (Heti rendszeresség beállítása)
-echo 3. Grafikus felület (GUI) javítása
-echo 4. Kilépés
-set /p opt="Választás: "
+echo =======================================================
+echo [RTS Defrager Master - Biztonsagi Modullal]
+echo =======================================================
+echo 1. Mely-karbantartas (3x Defrag + 2x Scandisk + S.M.A.R.T. check)
+echo 2. Heti utemezes beallitasa (Automatizalas)
+echo 3. Grafikus felulet (GUI) es Szolgaltatas javitas
+echo 4. Kilepes
+echo -------------------------------------------------------
+set /p opt="Valasztas: "
 
 if "%opt%"=="1" (
-    echo 3 > "..\LOG\cycle.tmp"
-    goto AUTO_RUN
+    echo 3 > "%CYCLEFILE%"
+    goto RUN_ENGINE
 )
 if "%opt%"=="2" (
-    schtasks /create /tn "RTS_Weekly_Defrag" /tr "%~f0" /sc weekly /d MON /st 01:00 /rl highest
-    echo [RTS] Heti ütemezés hétfő 01:00-ra beállítva.
+    schtasks /create /tn "RTS_Weekly_Defrag" /tr "%~f0" /sc weekly /d MON /st 01:00 /rl highest /f
+    echo [RTS] Heti utemezes beallitva. >> "%MASTERLOG%"
     pause & goto MENU
 )
 if "%opt%"=="3" (
-    echo [RTS] GUI javítása folyamatban...
-    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\dfrgui.exe" /ve /t REG_SZ /d "C:\Windows\System32\dfrgui.exe" /f
-    sc config defragsvc start= demand
-    net start defragsvc
-    echo [RTS] Kész. Próbáld megnyitni a Grafikus felületet.
+    call :FIX_GUI
     pause & goto MENU
 )
 exit
 
-:AUTO_RUN
-set /p CYCLE=<"..\LOG\cycle.tmp"
-echo [%date% %time%] Ciklus !CYCLE! indítása... >> "%LOGFILE%"
+:RUN_ENGINE
+set /p CYCLE=<"%CYCLEFILE%"
 
-:: W10 Motor frissítése/beállítása
+:: 1. Lepes: W10 Motor frissitese (ha van az Apps-ban)
 if exist "..\Apps\defrag.exe" (
-    echo [INFO] W10 motor használata... >> "%LOGFILE%"
-    copy /y "..\Apps\defrag.exe" "C:\Windows\System32\defrag.exe" >nul
+    echo [INFO] W10 motor masolasa a rendszerbe... >> "%MASTERLOG%"
+    takeown /f C:\Windows\System32\defrag.exe >nul
+    icacls C:\Windows\System32\defrag.exe /grant %username%:F >nul
+    copy /y "..\Apps\defrag.exe" "C:\Windows\System32\defrag.exe"
+    copy /y "..\Apps\defragres.dll" "C:\Windows\System32\defragres.dll"
 )
 
-:: PowerShell Motor hívása
+:: 2. Lepes: PowerShell Motor inditasa
 powershell -ExecutionPolicy Bypass -File "Defrager.ps1" -Cycle !CYCLE!
 
-:: Ciklus léptetés és Scandisk
+:: 3. Lepes: Cikluskezeles és Scandisk utemezes
 set /a NEXT_CYCLE=!CYCLE!-1
 if !NEXT_CYCLE! leq 0 (
-    del "..\LOG\cycle.tmp"
-    echo [FINISH] Karbantartás kész! >> "%LOGFILE%"
+    del "%CYCLEFILE%"
+    echo [KESZ] Minden ciklus sikeresen lefutott. >> "%MASTERLOG%"
+    echo Karbantartas befejezve.
     pause & exit
 )
 
-echo !NEXT_CYCLE! > "..\LOG\cycle.tmp"
-echo [RTS] Scandisk ütemezése és újraindítás...
+echo !NEXT_CYCLE! > "%CYCLEFILE%"
+echo [RTS] Scandisk utemezese es ujrainditas... >> "%MASTERLOG%"
 echo y | chkdsk C: /f
-shutdown /r /t 10 /c "RTS: Karbantartási ciklus miatt újraindítás 10mp múlva..."
+shutdown /r /t 15 /c "RTS Karbantartas: Ujrainditas a kovetkezo ciklushoz..."
+exit
+
+:FIX_GUI
+echo [RTS] Szolgaltatasok es registry helyreallitasa...
+sc config defragsvc start= demand
+net start defragsvc
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\dfrgui.exe" /ve /t REG_SZ /d "C:\Windows\System32\dfrgui.exe" /f
+echo [KESZ] GUI javitas elvegezve.
+goto :eof
