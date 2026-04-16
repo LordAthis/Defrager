@@ -1,44 +1,21 @@
-param (
-    [string]$LogPath = "..\LOG\Defrag_PowerShell.txt",
-    [string]$EnginePath = "defrag.exe"
-)
+param ([int]$Cycle = 1)
 
-function Write-Log($msg) {
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    $finalMsg = "[$timestamp] $msg"
-    Write-Host $finalMsg -ForegroundColor Green
-    Add-Content -Path $LogPath -Value $finalMsg
+$LogPath = "..\LOG\Defrag_Engine_Log.txt"
+function Write-RTSLog($msg) {
+    $txt = "[Ciklus $Cycle] $(Get-Date) - $msg"
+    Add-Content -Path $LogPath -Value $txt
+    Write-Host $txt -ForegroundColor Yellow
 }
 
-Write-Log "RTS Defrager Engine elindult."
+Write-RTSLog "Motor indítása..."
 
-# Szerviz kényszerítés (W7 GUI hiba áthidalása)
-Write-Log "Defragsvc szolgáltatás ellenőrzése..."
-$svc = Get-Service -Name defragsvc -ErrorAction SilentlyContinue
-if ($svc) {
-    Set-Service -Name defragsvc -StartupType Manual
-    Start-Service -Name defragsvc
-}
+# Service Fix (W7 specifikus)
+Get-Service defragsvc | Set-Service -StartupType Manual
+Start-Service defragsvc -ErrorAction SilentlyContinue
 
-# Meghajtók listázása
-$volumes = Get-WmiObject Win32_Volume | Where-Object { $_.DriveLetter -ne $null -and $_.DriveType -eq 3 }
+# Defrag futtatása
+$drive = "C:"
+Write-RTSLog "Töredezettségmentesítés futtatása a(z) $drive meghajtón..."
+& defrag.exe $drive /U /V /H | Out-File -FilePath $LogPath -Append
 
-foreach ($vol in $volumes) {
-    $drive = $vol.DriveLetter
-    Write-Log "Elemzés: $drive ..."
-
-    # SSD vs HDD (W10+ esetén optimalizált, W7 esetén defrag)
-    if ($OS_VER -ge "10.0") {
-        Write-Log "W10+ detektálva, Optimize-Volume indítása..."
-        Optimize-Volume -DriveLetter $drive.Replace(":","") -ReTrim -Defrag -Verbose 2>&1 >> $LogPath
-    } else {
-        # Legacy / Windows 7 szakasz
-        Write-Log "Hagyományos defrag indítása ($EnginePath) a(z) $drive meghajtón..."
-        $process = Start-Process -FilePath $EnginePath -ArgumentList "$drive /U /V" -Wait -NoNewWindow -PassThru
-        if ($process.ExitCode -ne 0) {
-            Write-Log "[!] Hiba a defrag során. Hibakód: $($process.ExitCode)"
-        }
-    }
-}
-
-Write-Log "RTS Defrager Engine befejezte a munkát."
+Write-RTSLog "Ciklus kész."
