@@ -45,6 +45,21 @@ exit
 :RUN_ENGINE
 set /p CYCLE=<"%CYCLEFILE%"
 
+:: Akkumulátor és Töltés ellenőrzése
+for /f "tokens=2 delims==" %%a in ('wmic path Win32_Battery get BatteryStatus /value 2^>nul') do set BATTERY_STATUS=%%a
+if "%BATTERY_STATUS%"=="1" (
+    echo.
+    echo [FIGYELEM] A gep akkumulatorrol üzemel!
+    echo A mely-karbantartas soran a lemerüles sulyos adatvesztest okozhat.
+    echo Kerlek, csatlakoztasd a toltot a folytatashoz!
+    echo.
+    echo [WARNING] Running on battery! 
+    echo Please connect the charger to prevent data loss.
+    del "%CYCLEFILE%"
+    pause
+    goto MENU
+)
+
 :: Verzió-kontrollált frissítés
 if exist "..\Apps\defrag.exe" (
     for /f "usebackq" %%v in (`powershell "(Get-Item 'C:\Windows\System32\defrag.exe').VersionInfo.FileVersion"`) do set "CUR_VER=%%v"
