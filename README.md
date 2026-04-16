@@ -51,6 +51,7 @@ A mélytisztítás (1-es opció) többszöri újraindítással jár! Ments el mi
 - `\LOG`: Naplófájlok és biztonsági mentések helye.
 
 
-#Ez a modul az **RTS keretrendszer** része, melyet régebbi (Win7) és modern (Win10/11) rendszerek mély-karbantartására terveztek.
+
+## Ez a modul az **RTS keretrendszer** része, melyet régebbi (Win7) és modern (Win10/11) rendszerek mély-karbantartására terveztek.
 ----------------------------
 
