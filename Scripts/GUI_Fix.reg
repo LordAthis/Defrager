@@ -1,0 +1,18 @@
+Windows Registry Editor Version 5.00
+
+; 1. Helyreállítja az alapértelmezett indítási utat
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\dfrgui.exe]
+@="C:\\Windows\\System32\\dfrgui.exe"
+"Path"="C:\\Windows\\System32"
+
+; 2. Eltávolítja az esetleges Explorer-alapú átirányításokat
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\DefragPath]
+@="C:\\Windows\\System32\\dfrgui.exe"
+
+; 3. Kényszerített fájltörlés/felülírás újraindításkor (Pending Operations)
+; Ez a kulcs gondoskodik róla, hogy a Windows betöltése előtt törlődjön a makacs fájl
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager]
+"PendingFileRenameOperations"=hex(7):5c,00,3f,00,3f,00,5c,00,43,00,3a,00,5c,00,\
+  57,00,69,00,6e,00,64,00,6f,00,77,00,73,00,5c,00,53,00,79,00,73,00,74,00,65,\
+  00,6d,00,33,00,32,00,5c,00,64,00,66,00,72,00,67,00,75,00,69,00,2e,00,65,00,\
+  78,00,65,00,00,00,00,00
