@@ -1,35 +1,67 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: RTS Könyvtárstruktúra biztosítása
+:: Mappa ellenőrzés
 if not exist "..\LOG" mkdir "..\LOG"
-if not exist "..\Apps" mkdir "..\Apps"
+set LOGFILE=..\LOG\RTS_Master_Log.txt
 
-set LOGFILE=..\LOG\Defrag_Log_%date:~0,4%%date:~5,2%%date:~8,2%.txt
-echo [RTS Defrager Start: %date% %time%] > "%LOGFILE%"
-
-:: Rendszergazdai jog ellenőrzése
-net session >nul 2>&1
-if %errorLevel% neq 0 (
-    echo [HIBA] Kérlek, futtasd rendszergazdaként! | tee -a "%LOGFILE%"
-    pause
-    exit
+:: Ciklus ellenőrzése (Újraindítás utáni folytatáshoz)
+if exist "..\LOG\cycle.tmp" (
+    set /p CYCLE=<"..\LOG\cycle.tmp"
+    echo [RTS] Folytatás: !CYCLE!. ciklus... >> "%LOGFILE%"
+    goto AUTO_RUN
 )
 
-:: Verzió detektálás
-for /f "tokens=4-5 delims=. " %%i in ('ver') do set OS_VER=%%i.%%j
-echo [INFO] Operációs rendszer verzió: %OS_VER% >> "%LOGFILE%"
+:MENU
+cls
+echo [RTS Defrager Master]
+echo 1. Alapos karbantartás (3x Defrag + 2x Scandisk ciklus)
+echo 2. Ütemezés (Heti rendszeresség beállítása)
+echo 3. Grafikus felület (GUI) javítása
+echo 4. Kilépés
+set /p opt="Választás: "
 
-:: Apps mappa ellenőrzése (W10 defrag portolás támogatása)
+if "%opt%"=="1" (
+    echo 3 > "..\LOG\cycle.tmp"
+    goto AUTO_RUN
+)
+if "%opt%"=="2" (
+    schtasks /create /tn "RTS_Weekly_Defrag" /tr "%~f0" /sc weekly /d MON /st 01:00 /rl highest
+    echo [RTS] Heti ütemezés hétfő 01:00-ra beállítva.
+    pause & goto MENU
+)
+if "%opt%"=="3" (
+    echo [RTS] GUI javítása folyamatban...
+    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\dfrgui.exe" /ve /t REG_SZ /d "C:\Windows\System32\dfrgui.exe" /f
+    sc config defragsvc start= demand
+    net start defragsvc
+    echo [RTS] Kész. Próbáld megnyitni a Grafikus felületet.
+    pause & goto MENU
+)
+exit
+
+:AUTO_RUN
+set /p CYCLE=<"..\LOG\cycle.tmp"
+echo [%date% %time%] Ciklus !CYCLE! indítása... >> "%LOGFILE%"
+
+:: W10 Motor frissítése/beállítása
 if exist "..\Apps\defrag.exe" (
-    echo [INFO] Külső (Apps) defrag motor észlelve. >> "%LOGFILE%"
-    set DEFRAG_PATH=..\Apps\defrag.exe
-) else (
-    set DEFRAG_PATH=defrag.exe
+    echo [INFO] W10 motor használata... >> "%LOGFILE%"
+    copy /y "..\Apps\defrag.exe" "C:\Windows\System32\defrag.exe" >nul
 )
 
-:: PowerShell motor indítása
-powershell -ExecutionPolicy Bypass -File "Defrager.ps1" -LogPath "%LOGFILE%" -EnginePath "%DEFRAG_PATH%"
+:: PowerShell Motor hívása
+powershell -ExecutionPolicy Bypass -File "Defrager.ps1" -Cycle !CYCLE!
 
-echo [RTS] Folyamat lefutott. Napló: %LOGFILE%
-pause
+:: Ciklus léptetés és Scandisk
+set /a NEXT_CYCLE=!CYCLE!-1
+if !NEXT_CYCLE! leq 0 (
+    del "..\LOG\cycle.tmp"
+    echo [FINISH] Karbantartás kész! >> "%LOGFILE%"
+    pause & exit
+)
+
+echo !NEXT_CYCLE! > "..\LOG\cycle.tmp"
+echo [RTS] Scandisk ütemezése és újraindítás...
+echo y | chkdsk C: /f
+shutdown /r /t 10 /c "RTS: Karbantartási ciklus miatt újraindítás 10mp múlva..."
