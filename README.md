@@ -18,8 +18,17 @@ Ez a modul az RTS (Real Time System) keretrendszer része, célja a lemezkarbant
 2. Válaszd az 1-es opciót a teljes ciklushoz.
 3. A gép többször újra fog indulni, a folyamat végén a naplók a `\LOG` mappában lesznek elérhetőek.
 
+### ⚠️ Biztonsági figyelmeztetések / Safety Warnings
 
-#Funkciók
+**[HU] Figyelem:** 
+A mély-karbantartási ciklus (1. opció) megkezdése előtt győződjön meg róla, hogy a laptop **töltőre van csatlakoztatva**! A folyamat során fellépő váratlan leállás (lemerülés) súlyos fájlrendszer-hibákhoz és adatvesztéshez vezethet. A program beépített védelemmel rendelkezik, és nem indul el akkumulátoros üzemmód esetén.
+
+**[EN] Attention:** 
+Before starting the Deep Maintenance cycle (Option 1), ensure your laptop is **connected to a charger**! An unexpected shutdown (power loss) during the process can lead to severe file system errors and data loss. The program includes built-in protection and will not start if the device is running on battery power.
+
+
+
+##Funkciók
 - W10 Engine Port: Ha az /Apps mappába másolod a Windows 10 defrag.exe fájlját, a rendszer automatikusan lecseréli a régebbi verziót a hatékonyabb W10-es motorra.
 - Intelligens Ciklusok: 1x indítással 3 körös Defrag + Scandisk láncot futtat le, minden kör után automatikus újraindítással és chkdsk ütemezéssel.
 - GUI Fix: Megjavítja az el nem induló grafikus felületet a szolgáltatások és regisztrációs utak helyreállításával.
