@@ -1,0 +1,19 @@
+# Defrager - GitIgnore
+
+# Jogvédett binárisok (Ezeket a felhasználónak kell pótolnia)
+/Apps/*.exe
+/Apps/*.dll
+/Apps/hu-HU/
+/Apps/en-US/
+/Apps/de-DE/
+/Apps/fr-FR/
+
+# Ideiglenes fájlok és ciklusjelzők
+/LOG/cycle.tmp
+/LOG/*.txt
+/LOG/Recovery/
+
+# Windows specifikus szemét
+Thumbs.db
+desktop.ini
+*.swp
