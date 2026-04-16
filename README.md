@@ -14,7 +14,7 @@ Ez a modul az RTS (Real Time System) keretrendszer része, célja a lemezkarbant
 
 
 ## Használat
-1. Futtasd a `Scripts\RTS_Defrag_Launcher.bat` fájlt **Rendszergazdaként**.
+1. Futtasd a `Scripts\Defrag_Launcher.bat` fájlt **Rendszergazdaként**.
 2. Válaszd az 1-es opciót a teljes ciklushoz.
 3. A gép többször újra fog indulni, a folyamat végén a naplók a `\LOG` mappában lesznek elérhetőek.
 
@@ -28,7 +28,7 @@ Ez a modul az RTS (Real Time System) keretrendszer része, célja a lemezkarbant
 
 # Telepítés és használat
 - Másold a defrag.exe-t és defragres.dll-t (W10-ből) az /Apps mappába (opcionális).
-- Indítsd el a /Scripts/RTS_Defrag_Launcher.bat fájlt Rendszergazdaként.
+- Indítsd el a /Scripts/Defrag_Launcher.bat fájlt Rendszergazdaként.
 - Válaszd az 1-es opciót a teljes mélytisztításhoz.
 
 
