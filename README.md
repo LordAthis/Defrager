@@ -28,7 +28,7 @@ Before starting the Deep Maintenance cycle (Option 1), ensure your laptop is **c
 
 
 
-##Funkciók
+## Funkciók
 - W10 Engine Port: Ha az /Apps mappába másolod a Windows 10 defrag.exe fájlját, a rendszer automatikusan lecseréli a régebbi verziót a hatékonyabb W10-es motorra.
 - Intelligens Ciklusok: 1x indítással 3 körös Defrag + Scandisk láncot futtat le, minden kör után automatikus újraindítással és chkdsk ütemezéssel.
 - GUI Fix: Megjavítja az el nem induló grafikus felületet a szolgáltatások és regisztrációs utak helyreállításával.
@@ -41,7 +41,7 @@ Before starting the Deep Maintenance cycle (Option 1), ensure your laptop is **c
 - Válaszd az 1-es opciót a teljes mélytisztításhoz.
 
 
-#Figyelmeztetés
+# Figyelmeztetés
 A mélytisztítás (1-es opció) többszöri újraindítással jár! Ments el minden munkát futtatás előtt.
 
 
