@@ -53,14 +53,23 @@ exit
 :RUN_ENGINE
 set /p CYCLE=<"%CYCLEFILE%"
 
-:: 1. Lepes: W10 Motor frissitese (ha van az Apps-ban)
+:: W10 Motor frissítése és "dupla" másolás a nyelvi hiba ellen
 if exist "..\Apps\defrag.exe" (
-    echo [INFO] W10 motor masolasa a rendszerbe... >> "%MASTERLOG%"
-    takeown /f C:\Windows\System32\defrag.exe >nul
-    icacls C:\Windows\System32\defrag.exe /grant %username%:F >nul
-    copy /y "..\Apps\defrag.exe" "C:\Windows\System32\defrag.exe"
-    copy /y "..\Apps\defragres.dll" "C:\Windows\System32\defragres.dll"
+    echo [INFO] Motor frissítése... >> "%MASTERLOG%"
+    set "FILES=defrag.exe defragres.dll dfrgui.exe"
+    for %%f in (!FILES!) do (
+        if exist "..\Apps\%%f" (
+            takeown /f C:\Windows\System32\%%f >nul 2>&1
+            icacls C:\Windows\System32\%%f /grant %username%:F >nul 2>&1
+            :: Másolás a gyökérbe
+            copy /y "..\Apps\%%f" "C:\Windows\System32\%%f" >nul
+            :: Másolás a nyelvi mappába (biztonsági tartalék)
+            if not exist "C:\Windows\System32\hu-HU" mkdir "C:\Windows\System32\hu-HU"
+            copy /y "..\Apps\%%f" "C:\Windows\System32\hu-HU\%%f" >nul
+        )
+    )
 )
+
 
 :: 2. Lepes: PowerShell Motor inditasa
 powershell -ExecutionPolicy Bypass -File "Defrager.ps1" -Cycle !CYCLE!
