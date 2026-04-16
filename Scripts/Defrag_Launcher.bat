@@ -42,43 +42,54 @@ if "%opt%"=="2" (
 if "%opt%"=="3" (call :FIX_GUI & pause & goto MENU)
 exit
 
+
 :RUN_ENGINE
 set /p CYCLE=<"%CYCLEFILE%"
 
-:: Akkumulátor és Töltés ellenőrzése
+:: Akkumulátor ellenőrzése
 for /f "tokens=2 delims==" %%a in ('wmic path Win32_Battery get BatteryStatus /value 2^>nul') do set BATTERY_STATUS=%%a
 if "%BATTERY_STATUS%"=="1" (
-    echo.
-    echo [FIGYELEM] A gep akkumulatorrol üzemel!
-    echo A mely-karbantartas soran a lemerüles sulyos adatvesztest okozhat.
-    echo Kerlek, csatlakoztasd a toltot a folytatashoz!
-    echo.
-    echo [WARNING] Running on battery! 
-    echo Please connect the charger to prevent data loss.
-    del "%CYCLEFILE%"
-    pause
-    goto MENU
+    echo [FIGYELEM] A gep akkumulatorrol uzemel! A folyamat megszakadt.
+    del "%CYCLEFILE%" & pause & goto MENU
 )
 
-:: Verzió-kontrollált frissítés
+:: Verzió-kontrollált és erőszakos frissítés
 if exist "..\Apps\defrag.exe" (
+    echo [INFO] Verzio-ellenorzes folyamatban... >> "%MASTERLOG%"
+    
     for /f "usebackq" %%v in (`powershell "(Get-Item 'C:\Windows\System32\defrag.exe').VersionInfo.FileVersion"`) do set "CUR_VER=%%v"
     for /f "usebackq" %%v in (`powershell "(Get-Item '..\Apps\defrag.exe').VersionInfo.FileVersion"`) do set "NEW_VER=%%v"
 
     if "!NEW_VER!" GTR "!CUR_VER!" (
-        echo [INFO] Ujabb verzio talalva (!NEW_VER!). Frissites... >> "%MASTERLOG%"
+        echo [INFO] Ujabb verzio talalva (!NEW_VER!). Kenyszeritett frissites... >> "%MASTERLOG%"
+        
+        :: Registry javítás alkalmazása (ha van)
+        if exist "GUI_Fix.reg" regedit.exe /s "GUI_Fix.reg"
+
         set "FILES=defrag.exe defragres.dll dfrgui.exe"
         for %%f in (!FILES!) do (
             if exist "..\Apps\%%f" (
-                takeown /f C:\Windows\System32\%%f >nul 2>&1
-                icacls C:\Windows\System32\%%f /grant %username%:F >nul 2>&1
+                :: Erőszakos jogátvétel és attribútum törlés
+                attrib -r -s -h "C:\Windows\System32\%%f" >nul 2>&1
+                takeown /f "C:\Windows\System32\%%f" /a >nul 2>&1
+                icacls "C:\Windows\System32\%%f" /grant administrators:F >nul 2>&1
+                
+                :: Próba: Törlés és másolás a System32-be
+                del /f /q "C:\Windows\System32\%%f" >nul 2>&1
                 copy /y "..\Apps\%%f" "C:\Windows\System32\%%f" >nul
+
+                :: Nyelvi mappa kezelése
                 if not exist "C:\Windows\System32\!SYS_LANG!" mkdir "C:\Windows\System32\!SYS_LANG!"
-                if exist "..\Apps\!SYS_LANG!\%%f" ( copy /y "..\Apps\!SYS_LANG!\%%f" "C:\Windows\System32\!SYS_LANG!\%%f" >nul )
+                if exist "..\Apps\!SYS_LANG!\%%f" (
+                    copy /y "..\Apps\!SYS_LANG!\%%f" "C:\Windows\System32\!SYS_LANG!\%%f" >nul
+                )
             )
         )
+    ) else (
+        echo [INFO] A rendszer mar a legfrissebb verziot hasznalja. >> "%MASTERLOG%"
     )
 )
+
 
 powershell -ExecutionPolicy Bypass -File "Defrager.ps1" -Cycle !CYCLE!
 
