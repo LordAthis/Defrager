@@ -1,0 +1,18 @@
+{
+  "TargetFiles": [
+    {
+      "FileName": "defrag.exe",
+      "MinVersion": "10.0.19041.0",
+      "SourcePackage": "https://windowsupdate.com"
+    },
+    {
+      "FileName": "defragres.dll",
+      "MinVersion": "10.0.19041.0",
+      "SourcePackage": "..."
+    }
+  ],
+  "SupportedOS": {
+    "Win10": "10.0",
+    "Win7": "6.1"
+  }
+}
