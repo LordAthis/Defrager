@@ -1,46 +1,60 @@
 # Searching.ps1
+# Jogosultsag es kornyezet beallitasa
+if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+    exit
+}
+
+# Alvasgatlo aktivalasa
+powercfg -requestsoverride driver "System" display system
+powercfg /x -standby-timeout-ac 0
+
+# Laptop figyelemztetes
+if ((Get-WmiObject -Class Win32_Battery) -ne $null) {
+    Write-Host "FIGYELEM: Laptop uzemmod! Csatlakoztassa a toltot a folyamat megkezdese elott!" -ForegroundColor Yellow
+}
+
+# Utvonalak es Logolas
+$LogPath = Join-Path $PSScriptRoot "..\Logs\Searching.log"
 $AppsPath = Join-Path $PSScriptRoot "..\Apps"
-$System32Path = "C:\Windows\System32"
-$SysWOW64Path = "C:\Windows\SysWOW64" # 32-bit fájlok 64-bit rendszeren
+if (!(Test-Path ".. \Logs")) { New-Item -ItemType Directory -Path "..\Logs" | Out-Null }
 
-# Célfájlok listája (Ezt később a Compatibility.json-ból is olvashatjuk)
+function Write-Log($msg) {
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    "$timestamp - $msg" | Out-File -FilePath $LogPath -Append
+    Write-Host $msg
+}
+
+Write-Log "--- KERESES ES MENTES INDITASA ---"
+
 $FilesToFind = @("defrag.exe", "defragres.dll")
+$Systems = @("C:\Windows\System32", "C:\Windows\SysWOW64")
 
-Write-Host "--- Defrager Rendszerellenőrzés ---" -ForegroundColor Cyan
+foreach ($SysDir in $Systems) {
+    if (Test-Path $SysDir) {
+        foreach ($FileName in $FilesToFind) {
+            $Source = Join-Path $SysDir $FileName
+            if (Test-Path $Source) {
+                $Info = Get-Item $Source
+                $Ver = $Info.VersionInfo.FileVersion.Replace(" ", "")
+                $Arch = if ($SysDir -like "*WOW64*") { "x86" } else { "x64" }
+                
+                $TargetName = "$($FileName.Split('.')[0])_v$($Ver)_$($Arch).$($FileName.Split('.')[1])"
+                $Dest = Join-Path $AppsPath $TargetName
 
-foreach ($FileName in $FilesToFind) {
-    # 1. Ellenőrizzük a natív rendszerfájlt (x64-en x64, x86-on x86)
-    $FilePath = Join-Path $System32Path $FileName
-    if (Test-Path $FilePath) {
-        $Info = Get-Item $FilePath
-        $Ver = $Info.VersionInfo.FileVersion.Replace(" ", "")
-        $Arch = if ([Environment]::Is64BitOperatingSystem) { "x64" } else { "x86" }
-        
-        $TargetName = "$($FileName.Split('.')[0])_v$($Ver)_$($Arch).$($FileName.Split('.')[1])"
-        $DestPath = Join-Path $AppsPath $TargetName
-
-        if (-not (Test-Path $DestPath)) {
-            Write-Host "[+] Új verzió találva: $TargetName - Másolás..." -ForegroundColor Green
-            Copy-Item $FilePath $DestPath
-        } else {
-            Write-Host "[OK] $TargetName már szerepel a könyvtárban." -ForegroundColor Gray
-        }
-    }
-
-    # 2. Ha 64 bites rendszeren vagyunk, keressük meg a 32 bites változatot is (SysWOW64)
-    if ([Environment]::Is64BitOperatingSystem -and (Test-Path $SysWOW64Path)) {
-        $FilePath32 = Join-Path $SysWOW64Path $FileName
-        if (Test-Path $FilePath32) {
-            $Info32 = Get-Item $FilePath32
-            $Ver32 = $Info32.VersionInfo.FileVersion.Replace(" ", "")
-            
-            $TargetName32 = "$($FileName.Split('.')[0])_v$($Ver32)_x86.$($FileName.Split('.')[1])"
-            $DestPath32 = Join-Path $AppsPath $TargetName32
-
-            if (-not (Test-Path $DestPath32)) {
-                Write-Host "[+] 32-bites verzió találva: $TargetName32 - Másolás..." -ForegroundColor Green
-                Copy-Item $FilePath32 $DestPath32
+                if (!(Test-Path $Dest)) {
+                    Copy-Item $Source $Dest -Force
+                    # Visszaellenorzes
+                    if (Test-Path $Dest) {
+                        Write-Log "[SIKER] Masolva: $TargetName"
+                    } else {
+                        Write-Log "[HIBA] Nem sikerult a masolas: $TargetName"
+                    }
+                } else {
+                    Write-Log "[INFO] Mar letezik: $TargetName"
+                }
             }
         }
     }
 }
+Write-Log "--- KERESES BEFEJEZVE ---"
