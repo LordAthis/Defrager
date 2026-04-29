@@ -1,60 +1,29 @@
-# Searching.ps1
-# Jogosultsag es kornyezet beallitasa
-if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
-    exit
-}
+# Scripts_Searching.ps1
+# Admin check, PowerConfig, Logolas (Repo + C:\Temp\LOG) ...
 
-# Alvasgatlo aktivalasa
-powercfg -requestsoverride driver "System" display system
-powercfg /x -standby-timeout-ac 0
-
-# Laptop figyelemztetes
-if ((Get-WmiObject -Class Win32_Battery) -ne $null) {
-    Write-Host "FIGYELEM: Laptop uzemmod! Csatlakoztassa a toltot a folyamat megkezdese elott!" -ForegroundColor Yellow
-}
-
-# Utvonalak es Logolas
-$LogPath = Join-Path $PSScriptRoot "..\Logs\Searching.log"
 $AppsPath = Join-Path $PSScriptRoot "..\Apps"
-if (!(Test-Path ".. \Logs")) { New-Item -ItemType Directory -Path "..\Logs" | Out-Null }
+$DataPath = Join-Path $PSScriptRoot "..\Data"
+$Config = Get-Content (Join-Path $DataPath "Compatibility.json") | ConvertFrom-Json
 
-function Write-Log($msg) {
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    "$timestamp - $msg" | Out-File -FilePath $LogPath -Append
-    Write-Host $msg
-}
+Write-Host "--- FAJLOK ELLENORZESE ---" -ForegroundColor Cyan
 
-Write-Log "--- KERESES ES MENTES INDITASA ---"
+foreach ($Target in $Config.TargetFiles) {
+    # Keresesi minta az Apps mappaban: defrag_v*_x64.exe
+    $Pattern = "$($Target.FileName.Split('.')[0])_v*_$($Target.Architecture).$($Target.FileName.Split('.')[1])"
+    $ExistingFile = Get-ChildItem $AppsPath -Filter $Pattern | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 
-$FilesToFind = @("defrag.exe", "defragres.dll")
-$Systems = @("C:\Windows\System32", "C:\Windows\SysWOW64")
+    if ($ExistingFile) {
+        $CurrentVer = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($ExistingFile.FullName).FileVersion
+        $CurrentMD5 = (Get-FileHash $ExistingFile.FullName -Algorithm MD5).Hash
 
-foreach ($SysDir in $Systems) {
-    if (Test-Path $SysDir) {
-        foreach ($FileName in $FilesToFind) {
-            $Source = Join-Path $SysDir $FileName
-            if (Test-Path $Source) {
-                $Info = Get-Item $Source
-                $Ver = $Info.VersionInfo.FileVersion.Replace(" ", "")
-                $Arch = if ($SysDir -like "*WOW64*") { "x86" } else { "x64" }
-                
-                $TargetName = "$($FileName.Split('.')[0])_v$($Ver)_$($Arch).$($FileName.Split('.')[1])"
-                $Dest = Join-Path $AppsPath $TargetName
-
-                if (!(Test-Path $Dest)) {
-                    Copy-Item $Source $Dest -Force
-                    # Visszaellenorzes
-                    if (Test-Path $Dest) {
-                        Write-Log "[SIKER] Masolva: $TargetName"
-                    } else {
-                        Write-Log "[HIBA] Nem sikerult a masolas: $TargetName"
-                    }
-                } else {
-                    Write-Log "[INFO] Mar letezik: $TargetName"
-                }
-            }
+        if ([version]$CurrentVer -lt [version]$Target.MinVersion) {
+            Write-Host "[!] $Pattern - ELAVULT (Verzió: $CurrentVer)" -ForegroundColor Red
+        } elseif ($Target.MD5 -ne "FeltoltesUtanFrissitendo" -and $CurrentMD5 -ne $Target.MD5) {
+            Write-Host "[!] $Pattern - HASH HIBA!" -ForegroundColor Red
+        } else {
+            Write-Host "[OK] $Pattern - MEGFELELO ($CurrentVer)" -ForegroundColor Green
         }
+    } else {
+        Write-Host "[HIANY] $($Target.FileName) nem talalhato az Apps mappaban!" -ForegroundColor Yellow
     }
 }
-Write-Log "--- KERESES BEFEJEZVE ---"
