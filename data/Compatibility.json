@@ -1,18 +1,30 @@
 {
+  "Settings": {
+    "ProjectName": "Defrager",
+    "SupportedOS": {
+      "Win10": "10.0",
+      "Win11": "10.0",
+      "Win8.1": "6.3",
+      "Win8": "6.2",
+      "Win7": "6.1"
+    }
+  },
   "TargetFiles": [
     {
       "FileName": "defrag.exe",
       "MinVersion": "10.0.19041.0",
-      "SourcePackage": "https://windowsupdate.com"
+      "Architecture": "x64",
+      "UpdateURL": "https://windowsupdate.com",
+      "MD5": "FeltoltesUtanFrissitendo",
+      "InternalWIMPath": "Windows_System32_defrag.exe"
     },
     {
       "FileName": "defragres.dll",
       "MinVersion": "10.0.19041.0",
-      "SourcePackage": "..."
+      "Architecture": "x64",
+      "UpdateURL": "https://windowsupdate.com",
+      "MD5": "FeltoltesUtanFrissitendo",
+      "InternalWIMPath": "Windows_System32_defragres.dll"
     }
-  ],
-  "SupportedOS": {
-    "Win10": "10.0",
-    "Win7": "6.1"
-  }
+  ]
 }
