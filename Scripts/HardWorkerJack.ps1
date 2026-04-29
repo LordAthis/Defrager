@@ -45,6 +45,44 @@ $Config = Get-Content $JsonFile | ConvertFrom-Json
 
 Write-Log "--- HARDWORKER JACK MUNKABA ALL ---"
 
+
+function Get-FilesByUpdate {
+    foreach ($Target in $Config.TargetFiles) {
+        $LocalMSU = Join-Path $WorkingDir "update_$($Target.Architecture).msu"
+        Write-Log "[FOLYAMAT] Ellenorzes: $($Target.FileName)"
+        
+        # HA NINCS OTT A FAJL, MEGPROBALJUK LETOLTENI
+        if (!(Test-Path $LocalMSU)) {
+            try {
+                Invoke-WebRequest -Uri $Target.UpdateURL -OutFile $LocalMSU -ErrorAction Stop
+                Write-Log "[SIKER] Automatikus letoltes kesz."
+            } catch {
+                Write-Log "[!] Automatikus letoltes sikertelen. Probald manualisan!"
+                Start-Process $Target.UpdateURL
+                Read-Host "Ha a fajl ott van: '$LocalMSU', nyomj Entert!"
+            }
+        }
+
+        # HA MOST MAR OTT VAN (letoltve vagy mar eleve ott volt)
+        if (Test-Path $LocalMSU) {
+            Write-Log "[FOLYAMAT] Kicsomagolas..."
+            expand.exe -F:* $LocalMSU $WorkingDir | Out-Null
+            $CabFile = Get-ChildItem $WorkingDir -Filter "*.cab" | Sort-Object Length -Descending | Select-Object -First 1
+            if ($CabFile) {
+                expand.exe -F:defrag.exe $CabFile.FullName $WorkingDir | Out-Null
+                $Extracted = Join-Path $WorkingDir "defrag.exe"
+                if (Test-Path $Extracted) {
+                    $Ver = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($Extracted).FileVersion.Replace(" ", "")
+                    $FinalName = "defrag_v$($Ver)_$($Target.Architecture).exe"
+                    Move-Item $Extracted (Join-Path $AppsPath $FinalName) -Force
+                    Write-Log "[KESZ] Apps-ba kerult: $FinalName"
+                }
+            }
+        }
+    }
+}
+
+
 # --- FUNKCIO: Letoltes es kinyeres ---
 function Get-FilesByUpdate {
     foreach ($Target in $Config.TargetFiles) {
