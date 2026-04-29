@@ -1,25 +1,34 @@
-# Defrag_Launcher.ps1
-$AppsPath = Join-Path $PSScriptRoot "..\Apps"
+# Launcher.ps1
+# (Admin check es PowerConfig itt is szerepel, mint fent...)
 
-# Futtassuk a keresést/begyűjtést
-. (Join-Path $PSScriptRoot "Searching.ps1")
-
-Write-Host "`n--- Állapotjelentés ---" -ForegroundColor Yellow
-
-# Ellenőrizzük az Apps mappát a lista alapján
-$AvailableFiles = Get-ChildItem $AppsPath -Filter "defrag_v*"
-
-if ($AvailableFiles.Count -eq 0) {
-    Write-Host "[!] HIÁNYZIK: Nincs használható fájl az /Apps mappában!" -ForegroundColor Red
-    Write-Host "[?] Tipp: Futasd a HardWorkerJack-et a beszerzéshez." -ForegroundColor Cyan
-} else {
-    foreach ($file in $AvailableFiles) {
-        Write-Host "[MEGLÉVŐ] $($file.Name)" -ForegroundColor Green
-    }
-    
-    # Itt jönne a döntési logika: melyik a legfrissebb?
-    $BestVersion = $AvailableFiles | Sort-Object Name -Descending | Select-Object -First 1
-    Write-Host "`nLegjobb elérhető opció: $($BestVersion.Name)" -ForegroundColor Magenta
+$LogPath = Join-Path $PSScriptRoot "..\Logs\Launcher.log"
+function Write-Log($msg, $color = "White") {
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    "$timestamp - $msg" | Out-File -FilePath $LogPath -Append
+    Write-Host $msg -ForegroundColor $color
 }
 
-# Itt folytatódna a tényleges töredezettségmentesítő hívása...
+Write-Log "--- DEFRAGER LAUNCHER INDITASA ---" -color Cyan
+
+# 1. Searching meghivasa
+$SearchingScript = Join-Path $PSScriptRoot "Searching.ps1"
+if (Test-Path $SearchingScript) {
+    Write-Log "[FOLYAMAT] Rendszerfajlok keresese..."
+    & $SearchingScript
+}
+
+# 2. Statusz check az Apps mappaban
+$Files = Get-ChildItem (Join-Path $PSScriptRoot "..\Apps") -Filter "defrag_v*"
+Write-Log "`n--- ELERHETO FAJLOK LISTAJA ---" -color Yellow
+
+if ($Files.Count -eq 0) {
+    Write-Log "[!] HIANY: Nincs hasznalhato fajl az /Apps mappaban!" Red
+} else {
+    foreach ($f in $Files) {
+        # Zold szin a meglévőnek
+        Write-Log "[OK] $($f.Name)" Green
+    }
+}
+
+# Itt lehet majd a jövőben választani a Defrager.ps1 vagy Scandisker.ps1 közül
+Write-Log "`n--- KESZ ---" -color Cyan
