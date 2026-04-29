@@ -120,10 +120,22 @@ if ($CheckFiles.Count -lt 2) {
     Get-FilesByISO
 }
 
+
+# Ellenorzes: Mappa megnyitasa takaritas elott (Teszteleshez)
+if (Test-Path $WorkingDir) {
+    Write-Log "[TESZT] Ideiglenes mappa megnyitasa ellenorzeshez..."
+    Start-Process explorer.exe $WorkingDir
+    Read-Host "Ellenorizd a mappat, majd nyomj Entert a takaritashoz és befejezéshez!"
+}
+
 # Takaritas
 if (Test-Path $WorkingDir) { 
-    # Biztonsagi unmount ha megszakadt volna
+    # Biztonsagi unmount ha az ISO fázisban megszakadt volna
     dism.exe /unmount-image /mountdir:$WorkingDir /discard 2>$null
+    
+    # Itt töröljük a munkamappát
     Remove-Item $WorkingDir -Recurse -Force -ErrorAction SilentlyContinue 
+    Write-Log "[INFO] Munkamappa feltakaritva."
 }
+
 Write-Log "--- HARDWORKER JACK VEGZETT ---"
