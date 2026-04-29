@@ -1,14 +1,11 @@
 # HardWorkerJack.ps1
-# (Admin check, PowerConfig, Laptop figyelmeztetes ide is jon...)
+# Jogosultsag es kornyezet (Admin, PowerConfig, Logolas) beallitasa...
 
-$RepoLog = Join-Path $PSScriptRoot "..\Logs\HardWorkerJack.log"
-$TempLog = "C:\Temp\LOG\HardWorkerJack.log"
+$WorkingDir = "C:\Temp\Defrager_Work"
 $AppsPath = Join-Path $PSScriptRoot "..\Apps"
 $DataPath = Join-Path $PSScriptRoot "..\Data"
-$WorkingDir = "C:\Temp\Defrager_Work"
-
-if (!(Test-Path "C:\Temp\LOG")) { New-Item -ItemType Directory -Path "C:\Temp\LOG" | Out-Null }
-if (!(Test-Path $WorkingDir)) { New-Item -ItemType Directory -Path $WorkingDir | Out-Null }
+$RepoLog = Join-Path $PSScriptRoot "..\Logs\HardWorkerJack.log"
+$TempLog = "C:\Temp\LOG\HardWorkerJack.log"
 
 function Write-Log($msg) {
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
@@ -18,26 +15,63 @@ function Write-Log($msg) {
     Write-Host $msg
 }
 
-Write-Log "--- HARDWORKER JACK MUNKABA ALL ---"
-
-# Adatok betoltese
-$Config = Get-Content (Join-Path $DataPath "Compatibility.json") | ConvertFrom-Json
-
-# PELDA: Letoltesi logika (W10 kumulativ frissitesbol kinyeres)
-# Megjegyzes: A pontos URL-eket a Compatibility.json-bol vesszuk
-foreach ($Target in $Config.TargetFiles) {
-    $DestFile = Join-Path $AppsPath $Target.FileName
+# --- A TERV: Letoltes az MS Update-rol ---
+function Try-UpdateDownload {
+    Write-Log "[FOLYAMAT] Probalom a frissitesi csomag letolteset..."
+    $Config = Get-Content (Join-Path $DataPath "Compatibility.json") | ConvertFrom-Json
     
-    if (!(Test-Path $DestFile)) {
-        Write-Log "[FOLYAMAT] Letoltes inditasa: $($Target.FileName)..."
+    foreach ($Source in $Config.UpdateSources) {
+        $LocalMSU = Join-Path $WorkingDir "update.msu"
+        try {
+            Invoke-WebRequest -Uri $Source.URL -OutFile $LocalMSU -ErrorAction Stop
+            Write-Log "[SIKER] Letoltes kesz, kicsomagolas..."
+            
+            # MSU -> CAB -> Fajlok kinyerese
+            expand.exe -F:* $LocalMSU $WorkingDir | Out-Null
+            $CabFile = Get-ChildItem $WorkingDir -Filter "*.cab" | Select-Object -First 1
+            expand.exe -F:defrag.exe $CabFile.FullName $AppsPath | Out-Null
+            
+            if (Test-Path (Join-Path $AppsPath "defrag.exe")) {
+                Write-Log "[KESZ] Fajlok beszerezve frissitesbol."
+                return $true
+            }
+        } catch {
+            Write-Log "[HIBA] Letoltes vagy kicsomagolas sikertelen: $($_.Exception.Message)"
+        }
+    }
+    return $false
+}
+
+# --- B TERV: ISO Banyaszat ---
+function Try-ISOMining {
+    Write-Host "`n[!] A terv sikertelen. Kerlek, tallozz be egy Windows ISO-t!" -ForegroundColor Yellow
+    Add-Type -AssemblyName System.Windows.Forms
+    $FileBrowser = New-Object System.Windows.Forms.OpenFileDialog
+    $FileBrowser.Filter = "ISO Fajlok (*.iso)|*.iso"
+    
+    if ($FileBrowser.ShowDialog() -eq "OK") {
+        $ISOPath = $FileBrowser.FileName
+        Write-Log "[FOLYAMAT] ISO felcsatolasa: $ISOPath"
+        $Drive = (Mount-DiskImage -ImagePath $ISOPath -PassThru | Get-Volume).DriveLetter
         
-        # Itt a tényleges letöltés és kicsomagolás helye
-        # Expand-WindowsImage vagy expand.exe használatával a CAB fájlokból
-        
-        Write-Log "[INFO] Ez a resz a letoltesi URL-ek tisztazasa utan lesz veglegesitve."
+        $WimPath = "$($Drive):\sources\install.wim" # Vagy install.esd
+        if (Test-Path $WimPath) {
+            Write-Log "[FOLYAMAT] Fajl banyaszata a WIM kontenerbol..."
+            # Itt a 7-Zip vagy Mount-WindowsImage parancs jon
+            # Pelda: Expand-WindowsImage -ImagePath $WimPath -Index 1 -OutputPath $WorkingDir
+            Write-Log "[INFO] ISO-bol valo kinyeres folyamatban..."
+        }
+        Dismount-DiskImage -ImagePath $ISOPath
     }
 }
 
-# Tisztitas a vegen
-# Remove-Item $WorkingDir -Recurse -Force
+# Foprogram
+if (!(Test-Path $WorkingDir)) { New-Item $WorkingDir -ItemType Directory }
+
+if (-not (Try-UpdateDownload)) {
+    Try-ISOMining
+}
+
+# Takaritas
+if (Test-Path $WorkingDir) { Remove-Item $WorkingDir -Recurse -Force }
 Write-Log "--- HARDWORKER JACK VEGZETT ---"
