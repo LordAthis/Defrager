@@ -53,8 +53,8 @@ function Write-Log($msg, $color = "White") {
 }
 
 # Menu rendszer
+Clear-Host
 do {
-    Clear-Host
     Write-Host "=== DEFRAGER KOZPONTI VEZERLO ===" -ForegroundColor Cyan
     Write-Host "Gyoker konyvtar: $RepoRoot" -ForegroundColor Gray
     Write-Host "--------------------------------"
