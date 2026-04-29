@@ -60,8 +60,12 @@ do {
     Write-Host "--------------------------------"
     Write-Host "1. Rendszerfajlok keresese es ellenorzese (Searching)"
     Write-Host "2. Hianyzo fajlok beszerzese (HardWorkerJack)"
-    Write-Host "3. Automatikus karbantartas beutemezese (SetupTask)"
-    Write-Host "4. Logok megtekintese"
+    Write-Host "3. Állapot lekérdezése"
+    Write-Host "4. Töredezettség mentesítés indítása"
+    Write-Host "5. Lemezellenőrzés"
+    Write-Host "6. Körkörös karbantartás - Erősen töredezett, használt meghajtók esetén!"
+    Write-Host "7. Automatikus karbantartas beutemezese (SetupTask)"
+    Write-Host "8. Logok megtekintese"
     Write-Host "Q. Kilepes"
     Write-Host "--------------------------------"
     $choice = Read-Host "Valassz egy menupontot"
@@ -88,11 +92,51 @@ do {
             Pause
         }
         "3" {
+            $ScriptFile = Join-Path $ScriptsPath "xxx3.ps1"
+            if (Test-Path $ScriptFile) {
+                Write-Log "[START] xxx3.ps1 inditasa..." Yellow
+                & $ScriptFile
+            } else {
+                Write-Log "[HIBA] Nem talalhato: $ScriptFile" Red
+            }
+            Pause
+        }
+        "4" {
+            $ScriptFile = Join-Path $ScriptsPath "Defrager.ps1"
+            if (Test-Path $ScriptFile) {
+                Write-Log "[START] Toredezettsegmentesites 'Defrager.ps1' inditasa..." Yellow
+                & $ScriptFile
+            } else {
+                Write-Log "[HIBA] Nem talalhato: $ScriptFile" Red
+            }
+            Pause
+        }
+        "5" {
+            $ScriptFile = Join-Path $ScriptsPath "xxx5.ps1"
+            if (Test-Path $ScriptFile) {
+                Write-Log "[START] xxx5.ps1 inditasa..." Yellow
+                & $ScriptFile
+            } else {
+                Write-Log "[HIBA] Nem talalhato: $ScriptFile" Red
+            }
+            Pause
+        }
+        "6" {
+            $ScriptFile = Join-Path $ScriptsPath "xxx6.ps1"
+            if (Test-Path $ScriptFile) {
+                Write-Log "[START] xxx6.ps1 inditasa..." Yellow
+                & $ScriptFile
+            } else {
+                Write-Log "[HIBA] Nem talalhato: $ScriptFile" Red
+            }
+            Pause
+        }
+        "7" {
             Write-Log "[START] Scheduled Task letrehozasa..." Yellow
             Write-Host "Funkcio hamarosan..."
             Pause
         }
-        "4" {
+        "8" {
             if (Test-Path $LogPath) { notepad.exe $LogPath }
         }
     }
