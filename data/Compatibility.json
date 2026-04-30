@@ -11,12 +11,51 @@
   },
   "TargetFiles": [
     {
-      "FileName": "defrag.exe",
+      "Id": 1,
+      "FileName": "defrag.exe_W81_1",
       "MinVersion": "10.0.19041.0",
       "Architecture": "x64",
-      "UpdateURL": "https://windowsupdate.com",
+      "UpdateURL": "https://catalog.s.download.windowsupdate.com/c/msdownload/update/software/crup/2014/03/windows8.1-kb2938439-x64_3ed1574369e36b11f37af41aa3a875a115a3eac1.msu",
       "MD5": "FeltoltesUtanFrissitendo",
       "InternalWIMPath": "Windows_System32_defrag.exe"
+    },
+    { 
+      "Id": 2,
+      "FileName": "defrag.exe_W81_2",
+      "MinVersion": "10.0.19041.0",
+      "Architecture": "x64",
+      "UpdateURL": "https://catalog.s.download.windowsupdate.com/c/msdownload/update/software/secu/2014/04/windows8.1-kb2959977-x64_574ba2d60baa13645b764f55069b74b2de866975.msu",
+      "MD5": "FeltoltesUtanFrissitendo",
+      "InternalWIMPath": "Windows_System32_defrag.exe"
+    },
+    { 
+      "Id": 3,
+      "FileName": "defrag.exe_W81_3",
+      "MinVersion": "10.0.19041.0",
+      "Architecture": "x64",
+      "UpdateURL": "https://catalog.s.download.windowsupdate.com/c/msdownload/update/software/crup/2014/02/windows8.1-kb2937592-x64_4abc0a39c9e500c0fbe9c41282169c92315cafc2.msu",
+      "MD5": "FeltoltesUtanFrissitendo",
+      "InternalWIMPath": "Windows_System32_defrag.exe"
+    },
+    { 
+      "Id": 4,
+      "FileName": "defrag.exe_W81_4",
+      "MinVersion": "10.0.19041.0",
+      "Architecture": "x64",
+      "UpdateURL": "https://catalog.s.download.windowsupdate.com/c/msdownload/update/software/secu/2014/04/windows8.1-kb2934018-x64_234a5fc4955f81541f5bfc0d447e4fc4934efc38.msu",
+      "MD5": "FeltoltesUtanFrissitendo",
+      "InternalWIMPath": "Windows_System32_defrag.exe"
+    },
+    { 
+      "Id": 5,
+      "FileName": "defrag.exe_W81_5",
+      "MinVersion": "10.0.19041.0",
+      "Architecture": "x64",
+      "UpdateURL": "https://catalog.s.download.windowsupdate.com/d/msdownload/update/software/secu/2014/04/clearcompressionflag_3104315db9d84f6a2a56b9621e89ea66a8c27604.exe",
+      "MD5": "FeltoltesUtanFrissitendo",
+      "InternalWIMPath": "Windows_System32_defrag.exe"
+    }
+  ]
     },
     {
       "FileName": "defragres.dll",
