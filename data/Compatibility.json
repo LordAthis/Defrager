@@ -57,8 +57,26 @@
     },
     {
       "Id": 6,
+      "FileName": "defrag.exe",
+      "Architecture": "x86",
+      "MinVersion": "6.3.9600.17031",
+      "UpdateURL": "https://windowsupdate.com",
+      "MD5": "FeltoltesUtanFrissitendo",
+      "InternalWIMPath": "Windows_System32_defrag.exe"
+    },
+    {
+      "Id": 7,
       "FileName": "defragres.dll",
       "Architecture": "x64",
+      "MinVersion": "10.0.19041.0",
+      "UpdateURL": "https://windowsupdate.com",
+      "MD5": "FeltoltesUtanFrissitendo",
+      "InternalWIMPath": "Windows_System32_defragres.dll"
+    },
+    {
+      "Id": 8,
+      "FileName": "defragres.dll",
+      "Architecture": "x86",
       "MinVersion": "10.0.19041.0",
       "UpdateURL": "https://windowsupdate.com",
       "MD5": "FeltoltesUtanFrissitendo",
