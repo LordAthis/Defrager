@@ -156,7 +156,7 @@ do {
     if ($IsFirstRun) {
         Write-Host "[JAVASLAT] Elso inditas eszlelve. Ajanlott: 1 (Allapotfelmeres)" -ForegroundColor Yellow
     }
-
+}
     $choice = Read-Host "Valassz menupontot"
 
     switch ($choice.ToUpper()) {
@@ -263,7 +263,7 @@ do {
                     Invoke-Action -ActionName "Korkoros karbantartas" -ScriptFile $SF -ActionKey "Circular"
                 } else {
                     Write-Log "[INFO] Circular.ps1 meg nem keszult - kesobbi fazis!" "Yellow"
-                    Write-Host "Ez a funkcio (6. fazis) meg fejlesztes alatt all." -ForegroundColor DarkGray
+                    Write-Host "Ez a funkcio (6. fazis) meg fejlesztes alatt all." -ForegroundColor Gray
                 }
             }
             $LastAction = Get-LastCompletedAction
