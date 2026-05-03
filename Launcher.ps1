@@ -126,30 +126,29 @@ $BatteryStatus = if ($OnBattery) {
 Clear-Host
 do {
     Write-Host ""
-    Write-Host "╔══════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║     DEFRAGER - KOZPONTI VEZERLO          ║" -ForegroundColor Cyan
-    Write-Host "╠══════════════════════════════════════════╣" -ForegroundColor Cyan
-    Write-Host "║  Gyoker: $($RepoRoot.PadRight(33))║" -ForegroundColor Gray
+    Write-Host "=== DEFRAGER - KOZPONTI VEZERLO ===" -ForegroundColor Cyan
+    Write-Host "------------------------------------" -ForegroundColor Cyan
+    Write-Host "  Gyoker: $RepoRoot" -ForegroundColor Gray
     if ($LastAction) {
-        Write-Host "║  Utolso muvelet: $($LastAction.PadRight(24))║" -ForegroundColor DarkGreen
+        Write-Host "  Utolso muvelet: $LastAction" -ForegroundColor DarkGreen
     }
     if ($IsFirstRun) {
-        Write-Host "║  *** ELSO INDITAS - Allapotfelmeres ajanl. ***  ║" -ForegroundColor Yellow
+        Write-Host "  *** ELSO INDITAS - Allapotfelmeres ajanlott! ***" -ForegroundColor Yellow
     }
     if ($OnBattery -and $BatteryStatus -eq 1) {
-        Write-Host "║  ⚠ FIGYELEM: Akkumulator! Csatlakoztasson toltot!  ║" -ForegroundColor Red
+        Write-Host "  FIGYELEM: Akkumulator! Csatlakoztasson toltot!" -ForegroundColor Red
     }
-    Write-Host "╠══════════════════════════════════════════╣" -ForegroundColor Cyan
-    Write-Host "║  1. Rendszerfajlok keresese + ellenorzese (Searching)    ║" -ForegroundColor White
-    Write-Host "║  2. Hianyzo fajlok beszerzese (HardWorkerJack)           ║" -ForegroundColor White
-    Write-Host "║  3. Rendszer defrag verzio lekerdezese / frissitese      ║" -ForegroundColor White
-    Write-Host "║  4. Toredezettsegmentesites                              ║" -ForegroundColor White
-    Write-Host "║  5. Lemezellenorzes (Scandisk/chkdsk)                    ║" -ForegroundColor White
-    Write-Host "║  6. Korkoros karbantartas (Defrag+Scandisk+Defrag)       ║" -ForegroundColor White
-    Write-Host "║  7. Automatikus karbantartas utemezese                   ║" -ForegroundColor White
-    Write-Host "║  8. Logok megtekintese                                   ║" -ForegroundColor White
-    Write-Host "║  Q. Kilepes                                              ║" -ForegroundColor DarkGray
-    Write-Host "╚══════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "------------------------------------" -ForegroundColor Cyan
+    Write-Host "  1. Rendszerfajlok keresese + ellenorzese (Searching)" -ForegroundColor White
+    Write-Host "  2. Hianyzo fajlok beszerzese (HardWorkerJack)" -ForegroundColor White
+    Write-Host "  3. Rendszer defrag verzio lekerdezese / frissitese" -ForegroundColor White
+    Write-Host "  4. Toredezettsegmentesites" -ForegroundColor White
+    Write-Host "  5. Lemezellenorzes (Scandisk/chkdsk)" -ForegroundColor White
+    Write-Host "  6. Korkoros karbantartas (Defrag+Scandisk+Defrag)" -ForegroundColor White
+    Write-Host "  7. Automatikus karbantartas utemezese" -ForegroundColor White
+    Write-Host "  8. Logok megtekintese" -ForegroundColor White
+    Write-Host "  Q. Kilepes" -ForegroundColor DarkGray
+    Write-Host "------------------------------------" -ForegroundColor Cyan
     Write-Host ""
 
     # Elso inditas: automatikus javaslat
