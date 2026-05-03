@@ -156,7 +156,7 @@ do {
     if ($IsFirstRun) {
         Write-Host "[JAVASLAT] Elso inditas eszlelve. Ajanlott: 1 (Allapotfelmeres)" -ForegroundColor Yellow
     }
-}
+
     $choice = Read-Host "Valassz menupontot"
 
     switch ($choice.ToUpper()) {
@@ -236,7 +236,8 @@ do {
                 # Ha meg nincs Scandisk.ps1, chkdsk kozvetlenul
                 Write-Log "[INFO] Scandisk.ps1 meg nem keszult, chkdsk kozvetlenul indul..." "Yellow"
                 $DriveLetter = Read-Host "Melyik meghajton? (pl. C)"
-                Write-Log "[START] chkdsk $DriveLetter`: /f /r - kovetkezo ujraindulaskor fut le" "Yellow"
+                $chkdskMsg = "[START] chkdsk " + $DriveLetter + ": /f /r - kovetkezo ujraindulaskor fut le"
+                Write-Log $chkdskMsg "Yellow"
                 & chkdsk.exe "$($DriveLetter):" /f /r /x
                 Write-Log "[MUVELET_KESZ] Scandisk_chkdsk" "Green"
             } else {
@@ -263,7 +264,7 @@ do {
                     Invoke-Action -ActionName "Korkoros karbantartas" -ScriptFile $SF -ActionKey "Circular"
                 } else {
                     Write-Log "[INFO] Circular.ps1 meg nem keszult - kesobbi fazis!" "Yellow"
-                    Write-Host "Ez a funkcio (6. fazis) meg fejlesztes alatt all." -ForegroundColor Gray
+                    Write-Host "Ez a funkcio - 6. fazis - meg fejlesztes alatt all." -ForegroundColor DarkGray
                 }
             }
             $LastAction = Get-LastCompletedAction
