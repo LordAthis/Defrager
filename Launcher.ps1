@@ -5,8 +5,8 @@
 # Indulaskor:
 #   - Log vizsgalat: volt-e mar futtatva? Ha igen, melyik muvelet volt utoljara?
 #   - Elso inditas: automatikus allapotfelmeres (Searching)
-#   - Minden muvelet utan: visszaellenorzés, eredmeny LOG-ba
-#   - Kepernyo: "Clear-Host do {" sorrend → muvelet kimenete olvasható
+#   - Minden muvelet utan: visszaellenorzes, eredmeny LOG-ba
+#   - Kepernyo: "Clear-Host do {" sorrend -> muvelet kimenete olvashato
 # =============================================================================
 
 #Requires -Version 3.0
@@ -51,14 +51,14 @@ function Write-Log {
 }
 
 # =============================================================================
-# LOG-ALAPU ALLAPOT KEZELÉS
+# LOG-ALAPU ALLAPOT KEZELES
 # =============================================================================
 
 # Az utolso befejezett muvelet kiolvasasa a LOG-bol
 function Get-LastCompletedAction {
     if (!(Test-Path $LogPath)) { return $null }
     $Lines = Get-Content $LogPath -Encoding UTF8 -ErrorAction SilentlyContinue
-    # Az utolso "[KESZ]" vagy "[MUVELET_KESZ]" sort keressük
+    # Az utolso "[KESZ]" vagy "[MUVELET_KESZ]" sort keressuk
     $Last = $Lines | Where-Object { $_ -match "\[MUVELET_KESZ\]" } | Select-Object -Last 1
     if ($Last) {
         if ($Last -match "\[MUVELET_KESZ\]\s+(.+)$") { return $Matches[1].Trim() }
@@ -112,7 +112,7 @@ function Invoke-Action {
 $IsFirstRun  = Test-IsFirstRun
 $LastAction  = Get-LastCompletedAction
 
-# Laptop ellenorzés - figyelmeztes megjelenitese
+# Laptop ellenorzes - figyelmeztes megjelenitese
 $OnBattery = (Get-WmiObject -Class Win32_Battery -ErrorAction SilentlyContinue) -ne $null
 $BatteryStatus = if ($OnBattery) {
     $Bat = Get-WmiObject -Class Win32_Battery -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -120,7 +120,7 @@ $BatteryStatus = if ($OnBattery) {
 } else { 0 }
 
 # =============================================================================
-# MENÜ
+# MENU
 # =============================================================================
 
 Clear-Host
@@ -192,7 +192,7 @@ do {
                 Write-Host ""
                 Write-Host "  Rendszer defrag.exe verzioja: $SysVer" -ForegroundColor Cyan
 
-                # Keresunk jobb verziót az /Apps-ban
+                # Keresunk jobb verziot az /Apps-ban
                 $Better = Get-ChildItem $AppsDir -Filter "defrag_v*_x64.exe" -ErrorAction SilentlyContinue |
                           Sort-Object { [version](($_.BaseName -split '_v')[1] -split '_')[0] } -Descending |
                           Select-Object -First 1
@@ -203,7 +203,7 @@ do {
                         if ([version]$AppsVer -gt [version]$SysVer) {
                             Write-Host "  /Apps-ban frissebb verzio talalhato: $AppsVer ($($Better.Name))" -ForegroundColor Green
                             Write-Host "  Frissites a SystemUpgrade.ps1 segitsegevel vegezheto el." -ForegroundColor Yellow
-                            Write-Log "[INFO] Frissitheto: rendszer v$SysVer → Apps v$AppsVer" "Yellow"
+                            Write-Log "[INFO] Frissitheto: rendszer v$SysVer -> Apps v$AppsVer" "Yellow"
                         } else {
                             Write-Host "  A rendszeren mar a legjobb elerheto verzio fut." -ForegroundColor Green
                             Write-Log "[OK] Rendszer defrag versio aktualis: v$SysVer" "Green"
@@ -249,14 +249,14 @@ do {
 
         "6" {
             Write-Host ""
-            Write-Host "[FIGYELEM] Korkoros karbantartas: Defrag → Scandisk (reboot) → Defrag → Allapot" -ForegroundColor Yellow
+            Write-Host "[FIGYELEM] Korkoros karbantartas: Defrag -> Scandisk (reboot) -> Defrag -> Allapot" -ForegroundColor Yellow
             Write-Host "A gep tobb alkalommal ujra fog indulni!" -ForegroundColor Yellow
             if ($OnBattery -and $BatteryStatus -eq 1) {
-                Write-Host "[STOP] Akkumulatoros uzemmodban ez a muvelet NEM indithatö!" -ForegroundColor Red
+                Write-Host "[STOP] Akkumulatoros uzemmodban ez a muvelet NEM indithato!" -ForegroundColor Red
                 Read-Host "Nyomj Entert..."
                 break
             }
-            $Confirm = Read-Host "Biztosan folytatod? Ments el minden nyitott munkát! [I/N]"
+            $Confirm = Read-Host "Biztosan folytatod? Ments el minden nyitott munkat! [I/N]"
             if ($Confirm -eq "I" -or $Confirm -eq "i") {
                 $SF = Join-Path $ScriptsPath "Circular.ps1"
                 if (Test-Path $SF) {
@@ -325,7 +325,7 @@ do {
                 if (Test-Path $LF) { Start-Process notepad.exe $LF }
                 else { Write-Host "Log fajl meg nem letezik: $LF" -ForegroundColor Yellow }
             }
-            # Nem pauzálunk itt, mert a Notepad háttérben nyílik
+            # Nem pauzalunk itt, mert a Notepad hatterben nyilik
         }
 
         "Q" {
