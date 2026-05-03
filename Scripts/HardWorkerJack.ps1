@@ -3,11 +3,11 @@
 # RTS Keretrendszer - Defrager projekt
 # =============================================================================
 # Muveleti sorrend (minden Target-fajlhoz):
-#   1. Keresés: /Apps (verzios) → /HardWorkerJack (repo) → C:\Temp\HardWorkerJack
-#   2. Ha talalt nyers csomagot (.msu/.cab/.exe/.iso) → feldolgoz
-#   3. Ha semmit sem talalt → letoltes megkiserlese
-#   4. Ha letoltes sem megy → bongeszo + felhasznaloi varakozas
-#   5. Feldolgozas: kicsomagol → verziót leker → verziozott nevvel /Apps-ba
+#   1. Kereses: /Apps (verzios) -> /HardWorkerJack (repo) -> C:\Temp\HardWorkerJack
+#   2. Ha talalt nyers csomagot (.msu/.cab/.exe/.iso) -> feldolgoz
+#   3. Ha semmit sem talalt -> letoltes megkiserlese
+#   4. Ha letoltes sem megy -> bongeszo + felhasznaloi varakozas
+#   5. Feldolgozas: kicsomagol -> verziot leker -> verziozott nevvel /Apps-ba
 #   6. Opcionalis: ISO banyaszat (manualis vagy CD/DVD/Pendrive)
 #   7. Temp mappa NEM torolodik automatikusan - felhasznalo donthet
 # =============================================================================
@@ -72,7 +72,7 @@ Write-Log "=== HARDWORKER JACK MUNKABA ALL ===" "Cyan"
 Write-Log "Repo gyoker: $RepoRoot" "Gray"
 
 # =============================================================================
-# SEGÉDFÜGGVÉNYEK
+# SEGEDFUGGVENYEK
 # =============================================================================
 
 function Get-FileVer {
@@ -96,7 +96,7 @@ function Copy-ToTemp {
     $Dest = Join-Path $TempWorkPath (Split-Path $SourcePath -Leaf)
     if (!(Test-Path $Dest)) {
         Copy-Item $SourcePath $Dest -Force
-        Write-Log "  [MASOLAS] $($Dest | Split-Path -Leaf) → TempWork" "Gray"
+        Write-Log "  [MASOLAS] $($Dest | Split-Path -Leaf) -> TempWork" "Gray"
     }
     return $Dest
 }
@@ -140,7 +140,7 @@ function Expand-FromCab {
     return $Extracted
 }
 
-# MSU kicsomagolasa: MSU → CAB → celfajl
+# MSU kicsomagolasa: MSU -> CAB -> celfajl
 function Expand-FromMsu {
     param([string]$MsuPath, [string]$TargetFileName, [string]$Arch)
 
@@ -195,13 +195,13 @@ function Save-ToApps {
         Write-Log "  [APPS] Mentve: $VersionedName" "Green"
         return $true
     } else {
-        Write-Log "  [APPS] Mentés sikertelen: $VersionedName" "Red"
+        Write-Log "  [APPS] Mentes sikertelen: $VersionedName" "Red"
         return $false
     }
 }
 
 # =============================================================================
-# KERESÉS MINDEN HELYSZÍNEN - nyers csomagok (.msu, .cab, .exe)
+# KERESES MINDEN HELYSZINEN - nyers csomagok (.msu, .cab, .exe)
 # =============================================================================
 function Find-RawPackages {
     param([string]$FileName, [string]$Arch)
@@ -210,7 +210,7 @@ function Find-RawPackages {
     $SearchPaths = @($RepoWorkPath, $TempWorkPath)
 
     foreach ($Dir in $SearchPaths) {
-        # Mindenféle csomagot keresünk, névtől függetlenül
+        # Mindenfele csomagot keresunk, nevtol fuggetlenul
         $All = Get-ChildItem $Dir -File -ErrorAction SilentlyContinue |
                Where-Object { $_.Extension -in @(".msu", ".cab", ".exe", ".zip") }
         foreach ($F in $All) {
@@ -223,7 +223,7 @@ function Find-RawPackages {
 }
 
 # =============================================================================
-# CD / DVD / PENDRIVE DETEKTÁLÁS (Windows telepítőre)
+# CD / DVD / PENDRIVE DETEKTALAS (Windows telepitore)
 # =============================================================================
 function Find-WindowsInstallMedia {
     $Drives = Get-WmiObject Win32_LogicalDisk | Where-Object { $_.DriveType -in @(3, 5) }
@@ -239,7 +239,7 @@ function Find-WindowsInstallMedia {
 }
 
 # =============================================================================
-# ISO BÁNYÁSZAT (manuális választás vagy automata észlelés)
+# ISO BANYASZAT (manualis valasztas vagy automata eszleles)
 # =============================================================================
 function Invoke-IsoBanyaszat {
     param([string[]]$TargetFileNames)
@@ -247,7 +247,7 @@ function Invoke-IsoBanyaszat {
     Write-Log "" "White"
     Write-Log "[ISO] ISO banyaszat indul..." "Cyan"
 
-    # 1. CD/DVD/Pendrive detektálás
+    # 1. CD/DVD/Pendrive detektalas
     $Media = Find-WindowsInstallMedia
     $WimPath = $null
     $MountedIso = $null
@@ -299,7 +299,7 @@ function Invoke-IsoBanyaszat {
     $MountDir = Join-Path $TempWorkPath "dism_mount"
     if (!(Test-Path $MountDir)) { New-Item -ItemType Directory -Path $MountDir -Force | Out-Null }
 
-    Write-Log "[ISO] DISM mount: $WimPath → $MountDir" "Gray"
+    Write-Log "[ISO] DISM mount: $WimPath -> $MountDir" "Gray"
     & dism.exe /mount-image /imagefile:$WimPath /index:1 /mountdir:$MountDir /readonly 2>&1 | Out-Null
 
     # 4. Fajlok kinyerese
@@ -339,7 +339,7 @@ function Invoke-IsoBanyaszat {
 }
 
 # =============================================================================
-# FŐ FELDOLGOZÓ LOGIKA - egy Target (FileName+Arch) feldolgozása
+# FO FELDOLGOZO LOGIKA - egy Target (FileName+Arch) feldolgozasa
 # =============================================================================
 function Invoke-ProcessTarget {
     param(
@@ -380,7 +380,7 @@ function Invoke-ProcessTarget {
     $RawPackages = Find-RawPackages -FileName $FileName -Arch $Arch
     $ProcessedOK = $false
 
-    # 3. Meglevő csomagok feldolgozása (ha Repo-ban van, masoljuk Temp-be)
+    # 3. Meglevo csomagok feldolgozasa (ha Repo-ban van, masoljuk Temp-be)
     foreach ($Pkg in $RawPackages) {
         # Ha Repo-ban van, masoljuk Temp-be is
         if ($Pkg.Dir -eq $RepoWorkPath) {
@@ -414,7 +414,7 @@ function Invoke-ProcessTarget {
 
     if ($ProcessedOK) { return $true }
 
-    # 4. Nincs feldolgozható csomag → letöltés
+    # 4. Nincs feldolgozhato csomag -> letoltes
     Write-Log "  [LETOLTES] Megkiserlom a letoltest: $UpdateURL" "Cyan"
 
     if ($UpdateURL -like "https://windowsupdate.com*" -or $UpdateURL -eq "") {
@@ -433,7 +433,7 @@ function Invoke-ProcessTarget {
     try {
         Write-Log "  [LETOLTES] Folyamatban..." "Gray"
         Invoke-WebRequest -Uri $UpdateURL -OutFile $DownloadFile -ErrorAction Stop
-        Write-Log "  [LETOLTES] Kész: $DownloadFile" "Green"
+        Write-Log "  [LETOLTES] Kesz: $DownloadFile" "Green"
 
         # Ujrafeldolgozas az iment letoltott fajllal
         return Invoke-ProcessTarget -FileName $FileName -Arch $Arch -MinVersion $MinVersion -UpdateURL $UpdateURL
@@ -453,7 +453,7 @@ function Invoke-ProcessTarget {
 }
 
 # =============================================================================
-# FŐPROGRAM
+# FOPROGRAM
 # =============================================================================
 
 # Egyedi FileName+Arch kombinaciok osszeszedese a JSON-bol
