@@ -306,63 +306,27 @@ do {
             Read-Host "Nyomj Entert a menuhoz..."
         }
 
-        " 8" {
-            # --- Logok megtekintese (Javitott, tisztitott verzio) ---
+        "8" {
+            Write-Host ""
+            Write-Host "Melyik logot szeretne megnyitni?" -ForegroundColor Cyan
+            Write-Host "  1. Launcher.log (Repo)"
+            Write-Host "  2. HardWorkerJack.log (Repo)"
+            Write-Host "  3. Searching.log (Repo)"
+            Write-Host "  4. Launcher.log (Temp: C:\Temp\LOG)"
+            $LogChoice = Read-Host "Valasztas"
             $LogFiles = @{
                 "1" = $LogPath
-                "2" = Join-Path $LogDir " HardWorkerJack.log"
-                "3" = Join-Path $LogDir " Searching.log"
+                "2" = Join-Path $LogDir "HardWorkerJack.log"
+                "3" = Join-Path $LogDir "Searching.log"
                 "4" = $TempLogPath
             }
-
-            $SubMenuRunning = $true
-            do {
-                Clear-Host
-                Write-Host "=== LOG MEGTEKINTES AL-MENU ===" -ForegroundColor Cyan
-                Write-Host " 1. Launcher.log, 2. HardWorkerJack, 3. Searching, 4. Temp Log"
-                Write-Host " 5. OSSZES log fajl megtekintese" -ForegroundColor Green
-                Write-Host " V. Vissza, Q. Kilepes"
-                $LogChoice = (Read-Host " Valassz").Trim()
-
-                # Karaktertisztító és ékezet-konvertáló funkció
-                $CleanAndDisplayLog = {
-                    param([string]$FilePath, [string]$Title)
-                    if (Test-Path $FilePath) {
-                        Clear-Host
-                        Write-Host "--- $Title ---" -ForegroundColor Yellow
-                        
-                        # Nyers byte-ként olvasás, UTF-8/Win-1250 próbálkozás
-                        $Bytes = [System.IO.File]::ReadAllBytes($FilePath)
-                        $Text = [System.Text.Encoding]::UTF8.GetString($Bytes)
-                        if ($Text -match ' ') { $Text = [System.Text.Encoding]::GetEncoding(1250).GetString($Bytes) }
-
-                        # Ékezet-tisztítás (a-e-i-o-u)
-                        $NormalizerTable = @{
-                            'á'='a'; 'Á'='A'; 'é'='e'; 'É'='E'; 'í'='i'; 'Í'='I';
-                            'ó'='o'; 'Ó'='O'; 'ö'='o'; 'Ö'='O'; 'ő'='o'; 'Ő'='O';
-                            'ú'='u'; 'Ú'='U'; 'ü'='u'; 'Ü'='U'; 'ű'='u'; 'Ű'='U'
-                        }
-                        foreach ($Key in $NormalizerTable.Keys) { $Text = $Text.Replace($Key, $NormalizerTable[$Key]) }
-                        
-                        # Bináris szemetek szűrése
-                        $Text = $Text -replace '[^\x09\x0A\x0D\x20-\x7E]', ''
-                        Write-Output $Text
-                        Read-Host "Enter..."
-                    } else { Write-Host "Fajl nem talalhato: $FilePath" -ForegroundColor Red; Start-Sleep 1 }
-                }
-
-                if ($LogFiles.ContainsKey($LogChoice)) {
-                    $Labels = @{ "1"="Launcher.log"; "2"="HardWorkerJack.log"; "3"="Searching.log"; "4"="Temp Log" }
-                    & $CleanAndDisplayLog -FilePath $LogFiles[$LogChoice] -Title $Labels[$LogChoice]
-                }
-                elseif ($LogChoice -eq "5") {
-                    foreach ($Key in "1","2","3","4") { if (Test-Path $LogFiles[$Key]) { & $CleanAndDisplayLog -FilePath $LogFiles[$Key] -Title $LogFiles[$Key] } }
-                }
-                elseif ($LogChoice.ToUpper() -eq "V") { $SubMenuRunning = $false }
-                elseif ($LogChoice.ToUpper() -eq "Q") { Exit }
-            } while ($SubMenuRunning)
+            if ($LogFiles.ContainsKey($LogChoice)) {
+                $LF = $LogFiles[$LogChoice]
+                if (Test-Path $LF) { Start-Process notepad.exe $LF }
+                else { Write-Host "Log fajl meg nem letezik: $LF" -ForegroundColor Yellow }
+            }
+            # Nem pauzalunk itt, mert a Notepad hatterben nyilik
         }
-
 
         "Q" {
             Write-Log "--- LAUNCHER BEZARVA ---" "Gray"
